@@ -25,6 +25,16 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Regenerate iOS template (generates Podfile + podhelper)
+        working-directory: iphone-app
+        run: flutter create --platforms=ios .
+
+      - name: Restore our customized files (deps, bluetooth plist, entitlements)
+        run: |
+          git checkout -- iphone-app/pubspec.yaml
+          git checkout -- iphone-app/ios/Runner/Info.plist
+          git checkout -- iphone-app/ios/Runner/Runner.entitlements
+
       - name: Flutter pub get
         run: flutter pub get
 
