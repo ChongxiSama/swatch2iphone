@@ -1,0 +1,54 @@
+name: Build iOS IPA (unsigned)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: build-ios
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: iphone-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: 'stable'
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: CocoaPods install
+        working-directory: iphone-app/ios
+        run: pod install
+
+      - name: Build unsigned Release app
+        env:
+          CODE_SIGNING_ALLOWED: "NO"
+          CODE_SIGNING_REQUIRED: "NO"
+          CODE_SIGN_IDENTITY: ""
+        run: flutter build ios --release --build-number=$GITHUB_RUN_NUMBER
+
+      - name: Package IPA
+        run: |
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r "$GITHUB_WORKSPACE/swatch-health-unsigned.ipa" Payload
+        working-directory: iphone-app
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: swatch-health-unsigned-ipa
+          path: swatch-health-unsigned.ipa
