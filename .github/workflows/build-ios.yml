@@ -30,10 +30,11 @@ jobs:
         run: flutter create --platforms=ios .
 
       - name: Restore our customized files (deps, bluetooth plist, entitlements)
+        working-directory: iphone-app
         run: |
-          git checkout -- iphone-app/pubspec.yaml
-          git checkout -- iphone-app/ios/Runner/Info.plist
-          git checkout -- iphone-app/ios/Runner/Runner.entitlements
+          git checkout -- pubspec.yaml
+          git checkout -- ios/Runner/Info.plist
+          git checkout -- ios/Runner/Runner.entitlements
 
       - name: Flutter pub get
         run: flutter pub get
